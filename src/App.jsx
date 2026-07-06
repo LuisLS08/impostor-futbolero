@@ -475,7 +475,7 @@ function App() {
           </div>
         )}
 
-        {/* PANTALLA 6: RESULTADOS FINAL DE PARTIDA */}
+       {/* PANTALLA 6: RESULTADOS FINAL DE PARTIDA */}
         {pantalla === "resultados" && (
           <div className="space-y-4 animate-fadeIn text-center">
             <h2 className="text-4xl font-black italic tracking-tighter bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 bg-clip-text text-transparent">
@@ -503,9 +503,25 @@ function App() {
           </div>
         )}
 
+      </div> {/* Cierra la caja del juego */}
+
+      {/* BLOQUE DE PUBLICIDAD */}
+      <div className="w-full max-w-sm mt-4 p-2 bg-slate-900/40 rounded-xl border border-slate-800/60 text-center">
+        <span className="text-[9px] text-slate-600 uppercase font-black tracking-widest block mb-1">Publicidad</span>
+        <div className="min-h-[60px] flex items-center justify-center text-xs text-slate-500 italic bg-slate-950/50 rounded-lg border border-dashed border-slate-800">
+          <ins className="adsbygoogle"
+               style={{ display: "block" }}
+               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+               data-ad-slot="YYYYYYYYYYYY"
+               data-ad-format="horizontal"
+               data-full-width-responsive="true">
+          </ins>
+        </div>
       </div>
-    </div>
+
+    </div> /* Cierra el contenedor de pantalla completa */
   )
 }
 
 export default App
+
