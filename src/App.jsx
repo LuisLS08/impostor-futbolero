@@ -511,7 +511,7 @@ function App() {
         <div className="min-h-[60px] flex items-center justify-center text-xs text-slate-500 italic bg-slate-950/50 rounded-lg border border-dashed border-slate-800">
           <ins className="adsbygoogle"
                style={{ display: "block" }}
-               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+               data-ad-client="ca-pub-1382224669385414"
                data-ad-slot="YYYYYYYYYYYY"
                data-ad-format="horizontal"
                data-full-width-responsive="true">
