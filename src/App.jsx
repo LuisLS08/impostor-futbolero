@@ -119,6 +119,15 @@ function App() {
   const [textoVeredictoVar, setTextoVeredictoVar] = useState("")
   const [tipoResultadoVar, setTipoResultadoVar] = useState("")
 
+  // --- CÁLCULO DINÁMICO DEL HOST ACTIVO ---
+  // 1. Buscamos al primer jugador de la lista que siga vivo (eliminado === false) y tenga es_creador.
+  // Si ese fue eliminado, elegimos al primer sobreviviente disponible de la lista.
+  const jugadorHostActivo = listaJugadores.find(j => !j.eliminado && j.es_creador) 
+    || listaJugadores.find(j => !j.eliminado);
+
+  // 2. Evaluamos si yo soy ese Host activo de la partida
+  const soyElHostActivo = jugadorHostActivo?.nombre === nombre.trim();
+
   useEffect(() => {
     if (!salaId) return;
 
@@ -249,6 +258,25 @@ function App() {
         resultado_ganador: null, impostor_nombre_final: null, var_texto: null, var_tipo: null
       }).eq("id", salaId);
     } catch (error) { console.error(error) }
+  }
+
+  const cambiarConceptoDeLaMesa = async () => {
+    try {
+      if (!soyElHostActivo) return; // Solo el host activo puede hacer el cambio
+      
+      // 1. Elegimos una categoría y concepto al azar del banco de datos
+      const temaElegido = TEMAS_FUTBOL[Math.floor(Math.random() * TEMAS_FUTBOL.length)];
+      const conceptoElegido = temaElegido.conceptos[Math.floor(Math.random() * temaElegido.conceptos.length)];
+      
+      // 2. Actualizamos solo la categoría y el concepto en la base de datos para esta sala
+      await supabase.from("salas").update({
+        categoria: temaElegido.categoria,
+        concepto: conceptoElegido
+      }).eq("id", salaId);
+      
+    } catch (error) {
+      console.error("Error al cambiar de concepto:", error);
+    }
   }
 
   const abrirInstanciaVotacion = async () => {
@@ -389,7 +417,18 @@ function App() {
                 ) : (
                   <div className="bg-gradient-to-b from-slate-950 to-slate-900 border border-yellow-500/20 p-4 rounded-xl text-center space-y-1">
                     <span className="text-[10px] font-black tracking-widest text-yellow-500 uppercase">Concepto Secreto</span>
-                    <h3 className="text-2xl font-black text-yellow-400 tracking-tight my-1 drop-shadow-[0_2px_10px_rgba(234,179,8,_0.2)]">{conceptoActual}</h3>
+                    
+                    {/* CANDADO DE SEGURIDAD ANTIPARPADEO */}
+                    {rolPropio === "PANELISTA" && conceptoActual ? (
+                      <h3 className="text-2xl font-black text-yellow-400 tracking-tight my-1 drop-shadow-[0_2px_10px_rgba(234,179,8,_0.2)] animate-fadeIn">
+                        {conceptoActual}
+                      </h3>
+                    ) : (
+                      <h3 className="text-sm font-bold text-slate-500 tracking-tight my-2 animate-pulse">
+                        Sincronizando VAR...
+                      </h3>
+                    )}
+                    
                     <p className="text-[10px] text-slate-500">Los jugadores inocentes debaten sobre este nombre.</p>
                   </div>
                 )}
@@ -403,10 +442,16 @@ function App() {
                 ))}
               </div>
             </div>
-            {esCreador && rolPropio !== "ESPECTADOR" && (
-              <button onClick={abrirInstanciaVotacion} className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-500 hover:to-amber-500 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-md transition-all active:scale-95">
-                🖥️ Detener Partido e ir al VAR
-              </button>
+            {soyElHostActivo && rolPropio !== "ESPECTADOR" && (
+              <div className="space-y-2">
+                <button onClick={abrirInstanciaVotacion} className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-500 hover:to-amber-500 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-md transition-all active:scale-95">
+                  🖥️ Detener Partido e ir al VAR
+                </button>
+
+                <button onClick={cambiarConceptoDeLaMesa} className="w-full bg-slate-800 hover:bg-slate-700 text-yellow-400 text-[11px] font-bold py-2 px-4 rounded-xl border border-slate-700 transition-all active:scale-95">
+                  🎲 Cambiar Personaje (Nadie lo conoce)
+                </button>
+              </div>
             )}
             <button onClick={salirDeLaSalaYLimpiar} className="w-full text-slate-500 hover:text-slate-400 text-[10px] uppercase font-bold py-1 tracking-wider transition-all">Abandonar Juego</button>
           </div>
@@ -467,7 +512,7 @@ function App() {
             <p className="text-[10px] text-slate-500 italic">
               {esCreador ? "Presiona continuar para reanudar el debate ordinario." : "Esperando que el Host ordene el regreso a las acciones..."}
             </p>
-            {esCreador && (
+            {soyElHostActivo && (
               <button onClick={regresarAlDebateOrdinario} className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-all shadow-md">
                 🏃‍♂️ Reanudar Partido (Volver al Debate)
               </button>
@@ -494,7 +539,7 @@ function App() {
                 <h3 className="text-sm font-bold text-yellow-400 uppercase">{conceptoActual}</h3>
               </div>
             </div>
-            {esCreador && (
+            {soyElHostActivo && (
               <button onClick={iniciarPartidaDelJuego} className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all">
                 🔄 Jugar Nueva Fecha (Revancha)
               </button>
